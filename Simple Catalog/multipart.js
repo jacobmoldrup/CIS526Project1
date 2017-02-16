@@ -4,9 +4,15 @@
  */
 module.exports = multipart;
 
-/* constants */
-const CRLF = Buffer.from([0x0D,0x0A]);
-const DOUBLE_CRLF = Buffer.from([0x0D,0x0A,0x0D,0x0A]);
+/* constants in */
+const CRLF = Buffer([0x0D,0x0A]);
+const DOUBLE_CRLF = Buffer([0x0D,0x0A,0x0D,0x0A]);
+
+// use these two lines if using a updated version of node. IF its not an update vesrion
+// use the above two lines of code.
+// const CRLF = Buffer.from([0x0D,0x0A]);
+// const DOUBLE_CRLF = Buffer.from([0x0D,0x0A,0x0D,0x0A]);
+
 
 /**
  * @function multipart

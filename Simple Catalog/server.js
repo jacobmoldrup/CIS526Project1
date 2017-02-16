@@ -7,10 +7,11 @@
 
 /* global variables */
 var multipart = require('./multipart');
+var template = require('./template');
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
-var port = 3000;
+var port = 9596;
 
 /* load cached files */
 var config = JSON.parse(fs.readFileSync('config.json'));
@@ -50,24 +51,10 @@ function imageNamesToTags(fileNames) {
  * gallery images.
  */
 function buildGallery(imageTags) {
-  var html =  '<!doctype html>';
-      html += '<head>';
-      html +=   '<title>' + config.title + '</title>';
-      html +=   '<link href="gallery.css" rel="stylesheet" type="text/css">'
-      html += '</head>';
-      html += '<body>';
-      html += '  <h1>' + config.title + '</h1>';
-      html += '  <form method="GET" action="">';
-      html += '    <input type="text" name="title">';
-      html += '    <input type="submit" value="Change Gallery Title">';
-      html += '  </form>';
-      html += imageNamesToTags(imageTags).join('');
-      html += ' <form action="" method="POST" enctype="multipart/form-data">';
-      html += '   <input type="file" name="image">';
-      html += '   <input type="submit" value="Upload Image">';
-      html += ' </form>';
-      html += '</body>';
-  return html;
+  return template.render('gallery', {
+    title: config.title,
+    imageTags: imageNamesToTags(imageTags).join('')
+  });
 }
 
 /** @function serveGallery
