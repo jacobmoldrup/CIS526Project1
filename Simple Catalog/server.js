@@ -17,6 +17,9 @@ var port = 9596;
 var config = JSON.parse(fs.readFileSync('config.json'));
 var stylesheet = fs.readFileSync('gallery.css');
 
+// load templates
+template.loadDir('templates');
+
 /** @function getImageNames
  * Retrieves the filenames for all images in the
  * /images directory and supplies them to the callback.
@@ -51,7 +54,7 @@ function imageNamesToTags(fileNames) {
  * gallery images.
  */
 function buildGallery(imageTags) {
-  return template.render('gallery', {
+  return template.render('gallery.html', {
     title: config.title,
     imageTags: imageNamesToTags(imageTags).join('')
   });

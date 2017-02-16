@@ -1,10 +1,28 @@
 /** @module template
  */
 module.exports = {
-    render: render
+    render: render,
+    loadDir: loadDir
 }
 
 var fs = require('fs');
+var templates = {};
+
+/**
+ * @function loadDir
+ * loads a directory of templates
+ * @param {string} directory - the directory to loadDir
+ */
+function loadDir(directory){
+    var dir = fs.readdirSync(directory);
+    dir.forEach(function(file){
+        var path = directory + '/' + file;
+        var stats = fs.statSync(path);
+        if(stats.isFile()){
+            templates[file] = fs.readFileSync(path).toString();
+        }
+    });
+}
 
 
 /**
@@ -13,10 +31,7 @@ var fs = require('fs');
  * @param {}
  */
 function render(templateName, context){
-    var html = fs.readFileSync('templates/' + templateName + '.html');
-    html = html.toString().replace(/{{(.+)}}/g, function(match, js){
+    return templates[templateName].replace(/{{(.+)}}/g, function(match, js){
        return eval("var context = " + JSON.stringify(context) + ";" + js);
     });
-
-    return html;
 }
