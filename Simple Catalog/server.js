@@ -42,7 +42,7 @@ function getImageNames(callback) {
  */
 function imageNamesToTags(fileNames) {
   return fileNames.map(function(fileName) {
-    return `<img src="${fileName}" alt="${fileName}">`;
+    return `<a href="doest-exist"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
 
