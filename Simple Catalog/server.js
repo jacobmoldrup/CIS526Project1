@@ -17,11 +17,15 @@ var port = 9596;
 //var config = JSON.parse(fs.readFileSync('config.json'));
 //var stylesheet = fs.readFileSync('gallery.css');
 
-var stylesheet = fs.readFileSync('public/styles/shared.css');
+var sharedStylesheet = fs.readFileSync('public/styles/shared.css');
+var indexStylesheet = fs.readFileSync('public/styles/index.css');
 
 
 // load templates
 template.loadDir('views');
+
+var jsonFiles = {};
+loadDir('public/Data');
 
 /* Create and launch the webserver */
 var server = http.createServer(handleRequest);
@@ -41,38 +45,36 @@ function handleRequest(req, res) {
   // a resource and a querystring separated by a ?
   var urlParts = url.parse(req.url);
 
-  // if(urlParts.query){
-  //   var matches = /title=(.+)($|&)/.exec(urlParts.query);
-  //   if(matches && matches[1]){
-  //     config.title = decodeURIComponent(matches[1]);
-  //     fs.writeFile('config.json', JSON.stringify(config));
-  //   }
-  // }
-
   switch(urlParts.pathname) {
     case '/':
     case '/views':
-    case 'index':
     case '/index':
-    case 'index.html':
     case '/index.html':
-        serveAllTeams(req, res);
+      serveAllTeams(req, res);
       break;
-    case 'add-new-form.html':
     case '/add-new-form.html':
-    case 'add-new-form':
     case '/add-new-form':
-      console.log('in case for new team.' + req.url);
-      serveForm(req, res);
+    if(req.method == 'GET') {
+        serveForm(req, res);
+      } else if(req.method == 'POST') {
+        uploadData(req, res);
+      }
       break;
-    case 'public/styles/shared.css': // **********why does this exist
+    case '/public/styles/index.css': 
       res.setHeader('Content-Type', 'text/css');
-      res.end(stylesheet);
+      res.end(indexStylesheet);
+      break;
+    case '/public/styles/shared.css':
+      res.setHeader('Content-Type', 'text/css');
+      res.end(sharedStylesheet);
       break;
     default:
-      //serveTeam(req.url, req, res);
-      serveImage(req.url, req, res);
-
+      if(req.url.split('/')[1] == 'team'){
+        serveTeam(req.url.split('/')[2], req, res);
+      }
+      else{
+        serveImage(req.url, req, res);
+      }
   }
 }
 
@@ -84,7 +86,7 @@ function handleRequest(req, res) {
  * @param {http.serverResponse} res - the response object
  */
 function serveAllTeams(req, res) {
-  getTeamNames(function(err, teamNames){
+  getTeamImages(function(err, teamNames){
     if(err) {
       console.error(err);
       res.statusCode = 500;
@@ -135,7 +137,7 @@ function buildNewTeamPage(req, res){
  * @param {function} callback - function that takes an
  * error and array of filenames as parameters
  */
-function getTeamNames(callback) {
+function getTeamImages(callback) {
   fs.readdir('public/images/', function(err, fileNames){
     if(err){
       callback(err, undefined);
@@ -145,6 +147,24 @@ function getTeamNames(callback) {
     }
   });
 }
+
+/** @function getTeamNames
+ * Retrieves the filenames for all images in the
+ * /images directory and supplies them to the callback.
+ * @param {function} callback - function that takes an
+ * error and array of filenames as parameters
+ */
+function getTeamJSON(callback) {
+  fs.readdir('public/Data/', function(err, fileNames){
+    if(err){
+      callback(err, undefined);
+    } 
+    else{
+      callback(false, fileNames);
+    }
+  });
+}
+
 
 /**
  * @function buildIndexPage
@@ -169,43 +189,62 @@ function buildIndexPage(imageTags) {
  */
 function teamNamesToHTMLTags(fileNames) {
   return fileNames.map(function(fileName) {
-    return `<a href="${fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
+    return `<a href="${'team/' + fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
 
 
 
-// // ************************************is this function being built correctly?
-// /** @function serveImage
-//  * A function to serve an image file.
-//  * @param {string} filename - the filename of the image
-//  * to serve.
-//  * @param {http.incomingRequest} - the request object
-//  * @param {http.serverResponse} - the response object
-//  */
-// function serveTeam(fileName, req, res) {
-//   console.log('In ServeTeam: FileName = ' + fileName);
-//   res.setHeader('Content-Type', 'text/html');
-//   res.end(buildTeamPage('images/'+ fileName));
-// }
+/** @function serveImage
+ * A function to serve an image file.
+ * @param {string} filename - the filename of the image
+ * to serve.
+ * @param {http.incomingRequest} - the request object
+ * @param {http.serverResponse} - the response object
+ */
+function serveTeam(fileName, req, res) {
+  res.setHeader('Content-Type', 'text/html');
+  res.end(buildTeamPage( fileName ));
+}
 
-// function buildTeamPage(fileName){
-//     // get the data from json object based on filename.*********
-//     return template.render('team-data.html', {
-//     imageTag: teamNameToHTMLTag(fileName),
-//     name: '',
-//     description: '',
-//     coach:'',
-//     record:'',
-//     location:''
-//   });
+function buildTeamPage(fileName){
+    // get the data from json object based on filename.
+    // make reading of file asyncronous.
+    var data = jsonFiles[fileName];
+    return template.render('team-data.html', {
+      imageTag: teamNameToHTMLTag(data.imagePath),
+      name: data.name,
+      description: data.description,
+      coach:data.coach,
+      record:data.record,
+      location:data.location
+    });
 
-// }
+}
 
-// function teamNameToHTMLTag(fileName){
-//   return `<img src="${fileName}" alt="${fileName}">`;
-// }
+function teamNameToHTMLTag(teamLogo){
+  return `<img src="${teamLogo}" alt="NFL Team Logo">`;
+}
 
+
+function uploadData(req, res){
+  multipart(req, res, function(){
+    var jsonData ={
+      name:req.body.team,
+      coach:req.body.coach,
+      description:req.body.description,
+      location:req.body.location,
+      record:req.body.record,
+      imagePath: req.body.image.filename
+    }
+    uploadImage(req, res);
+    var jsonFileName = req.body.image.filename.split('.')[0];
+    var jsonExtension = '.json';
+    fs.writeFile(jsonFileName + jsonExtension, jsonData);
+    jsonData[jsonFileName] = jsonData;
+
+  });
+}
 
 /** @function uploadImage
  * A function to process an http POST request
@@ -213,28 +252,28 @@ function teamNamesToHTMLTags(fileNames) {
  * @param {http.incomingRequest} req - the request object
  * @param {http.serverResponse} res - the response object
  */
-function uploadImage(req, res) {
-  multipart(req, res, function(req, res) {
-    // make sure an image was uploaded
-    if(!req.body.image.filename) {
-      console.error("No file in upload");
-      res.statusCode = 400;
-      res.statusMessage = "No file specified"
-      res.end("No file specified");
+function uploadImage(req, res) { 
+  fs.writeFile('images/' + req.body.image.filename, req.body.image.data, function(err){
+    if(err) {
+      console.error(err);
+      res.statusCode = 500;
+      res.statusMessage = "Server Error";
+      res.end("Server Error");
       return;
     }
-    
-    fs.writeFile('images/' + req.body.image.filename, req.body.image.data, function(err){
-      if(err) {
-        console.error(err);
-        res.statusCode = 500;
-        res.statusMessage = "Server Error";
-        res.end("Server Error");
-        return;
-      }
-      serveGallery(req, res);
-    });
+    serveGallery(req, res);
   });
+}
+
+function loadDir(directory){
+    var dir = fs.readdirSync(directory);
+    dir.forEach(function(file){
+        var path = directory + '/' + file;
+        var stats = fs.statSync(path);
+        if(stats.isFile()){
+            jsonFiles[file.split('.')[0]] = JSON.parse(fs.readFileSync(path).toString());
+        }
+    });
 }
 
 
