@@ -36,7 +36,7 @@ server.listen(port, function(){
 function handleRequest(req, res) {
   // at most, the url should have two parts -
   // a resource and a querystring separated by a ?
-  // var urlParts = url.parse(req.url);
+  var urlParts = url.parse(req.url);
 
   // if(urlParts.query){
   //   var matches = /title=(.+)($|&)/.exec(urlParts.query);
