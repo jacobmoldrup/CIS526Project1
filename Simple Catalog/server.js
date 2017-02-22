@@ -7,7 +7,7 @@
 
 /* global variables */
 var multipart = require('./multipart');
-var view = require('./view');
+var template = require('./template');
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
@@ -18,7 +18,7 @@ var port = 9596;
 //var stylesheet = fs.readFileSync('gallery.css');
 
 // load templates
-view.loadDir('views');
+template.loadDir('views');
 
 /* Create and launch the webserver */
 var server = http.createServer(handleRequest);
