@@ -7,31 +7,118 @@
 
 /* global variables */
 var multipart = require('./multipart');
-var template = require('./template');
+var view = require('./view');
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
 var port = 9596;
 
 /* load cached files */
-var config = JSON.parse(fs.readFileSync('config.json'));
-var stylesheet = fs.readFileSync('gallery.css');
+//var config = JSON.parse(fs.readFileSync('config.json'));
+//var stylesheet = fs.readFileSync('gallery.css');
 
 // load templates
-template.loadDir('templates');
+view.loadDir('views');
 
-/** @function getImageNames
+/* Create and launch the webserver */
+var server = http.createServer(handleRequest);
+server.listen(port, function(){
+  console.log("Server is listening on port ", port);
+});
+
+
+/** @function handleRequest
+ * A function to determine what to do with
+ * incoming http requests.
+ * @param {http.incomingRequest} req - the incoming request object
+ * @param {http.serverResponse} res - the response object
+ */
+function handleRequest(req, res) {
+  // at most, the url should have two parts -
+  // a resource and a querystring separated by a ?
+  // var urlParts = url.parse(req.url);
+
+  // if(urlParts.query){
+  //   var matches = /title=(.+)($|&)/.exec(urlParts.query);
+  //   if(matches && matches[1]){
+  //     config.title = decodeURIComponent(matches[1]);
+  //     fs.writeFile('config.json', JSON.stringify(config));
+  //   }
+  // }
+
+  switch(urlParts.pathname) {
+    case '/':
+    case '/views':
+    case 'index':
+    case 'index.html':
+        serveAllTeams(req, res);
+      break;
+    case 'public/styles/shared.css':
+      res.setHeader('Content-Type', 'text/css');
+      res.end(stylesheet);
+      break;
+    default:
+      serveTeam(req.url, req, res);
+  }
+}
+
+/** @function serveAllTeams
+ * A function to serve a HTML page representing a
+ * gallery of images.
+ * @param {http.incomingRequest} req - the request object
+ * @param {http.serverResponse} res - the response object
+ */
+function serveAllTeams(req, res) {
+  getTeamNames(function(err, teamNames){
+    if(err) {
+      console.error(err);
+      res.statusCode = 500;
+      res.statusMessage = 'Server error';
+      res.end();
+      return;
+    }
+    res.setHeader('Content-Type', 'text/html');
+    res.end(buildIndexPage(teamNames));
+  });
+}
+
+
+/** @function getTeamNames
  * Retrieves the filenames for all images in the
  * /images directory and supplies them to the callback.
  * @param {function} callback - function that takes an
  * error and array of filenames as parameters
  */
-function getImageNames(callback) {
-  fs.readdir('images/', function(err, fileNames){
-    if(err) callback(err, undefined);
-    else callback(false, fileNames);
+function getTeamNames(callback) {
+  fs.readdir('public/images/', function(err, items){
+    if(err)
+    {
+      callback(err, undefined);
+    } 
+    else{
+      var fileNames = items.filter(function(item){
+        return item.statSync('public/images/' + item).isFile();
+      });
+      console.log(fileNames);
+      callback(false, fileNames);
+    }
   });
 }
+
+/**
+ * @function buildIndexPage
+ * A helper function to build an HTML string
+ * of a gallery webpage.
+ * @param {string[]} imageTags - the HTML for the individual
+ * gallery images.
+ */
+function buildIndexPage(imageTags) {
+  return template.render('views/index.html', {
+    teamNames: imageTags,
+    imageTags: imageNamesToTags(imageTags).join('')
+  });
+}
+
 
 /** @function imageNamesToTags
  * Helper function that takes an array of image
@@ -42,43 +129,11 @@ function getImageNames(callback) {
  */
 function imageNamesToTags(fileNames) {
   return fileNames.map(function(fileName) {
-    return `<a href="doest-exist"><img src="${fileName}" alt="${fileName}"></a>`;
+    return `<a href="${fileName}"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
 
-/**
- * @function buildGallery
- * A helper function to build an HTML string
- * of a gallery webpage.
- * @param {string[]} imageTags - the HTML for the individual
- * gallery images.
- */
-function buildGallery(imageTags) {
-  return template.render('gallery.html', {
-    title: config.title,
-    imageTags: imageNamesToTags(imageTags).join('')
-  });
-}
 
-/** @function serveGallery
- * A function to serve a HTML page representing a
- * gallery of images.
- * @param {http.incomingRequest} req - the request object
- * @param {http.serverResponse} res - the response object
- */
-function serveGallery(req, res) {
-  getImageNames(function(err, imageNames){
-    if(err) {
-      console.error(err);
-      res.statusCode = 500;
-      res.statusMessage = 'Server error';
-      res.end();
-      return;
-    }
-    res.setHeader('Content-Type', 'text/html');
-    res.end(buildGallery(imageNames));
-  });
-}
 
 /** @function serveImage
  * A function to serve an image file.
@@ -87,8 +142,8 @@ function serveGallery(req, res) {
  * @param {http.incomingRequest} - the request object
  * @param {http.serverResponse} - the response object
  */
-function serveImage(fileName, req, res) {
-  fs.readFile('images/' + decodeURIComponent(fileName), function(err, data){
+function serveTeam(fileName, req, res) {
+  fs.readFile('public/images/' + decodeURIComponent(fileName), function(err, data){
     if(err) {
       console.error(err);
       res.statusCode = 404;
@@ -117,6 +172,7 @@ function uploadImage(req, res) {
       res.end("No file specified");
       return;
     }
+    
     fs.writeFile('images/' + req.body.image.filename, req.body.image.data, function(err){
       if(err) {
         console.error(err);
@@ -130,45 +186,5 @@ function uploadImage(req, res) {
   });
 }
 
-/** @function handleRequest
- * A function to determine what to do with
- * incoming http requests.
- * @param {http.incomingRequest} req - the incoming request object
- * @param {http.serverResponse} res - the response object
- */
-function handleRequest(req, res) {
-  // at most, the url should have two parts -
-  // a resource and a querystring separated by a ?
-  var urlParts = url.parse(req.url);
 
-  if(urlParts.query){
-    var matches = /title=(.+)($|&)/.exec(urlParts.query);
-    if(matches && matches[1]){
-      config.title = decodeURIComponent(matches[1]);
-      fs.writeFile('config.json', JSON.stringify(config));
-    }
-  }
 
-  switch(urlParts.pathname) {
-    case '/':
-    case '/gallery':
-      if(req.method == 'GET') {
-        serveGallery(req, res);
-      } else if(req.method == 'POST') {
-        uploadImage(req, res);
-      }
-      break;
-    case '/gallery.css':
-      res.setHeader('Content-Type', 'text/css');
-      res.end(stylesheet);
-      break;
-    default:
-      serveImage(req.url, req, res);
-  }
-}
-
-/* Create and launch the webserver */
-var server = http.createServer(handleRequest);
-server.listen(port, function(){
-  console.log("Server is listening on port ", port);
-});
