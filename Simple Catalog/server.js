@@ -62,6 +62,7 @@ function handleRequest(req, res) {
     case '/add-new-form.html':
     case 'add-new-form':
     case '/add-new-form':
+      console.log('in case for new team.' + req.url);
       serveForm(req, res);
       break;
     case 'public/styles/shared.css': // **********why does this exist
@@ -69,21 +70,12 @@ function handleRequest(req, res) {
       res.end(stylesheet);
       break;
     default:
-      serveTeam(req.url, req, res);
+      //serveTeam(req.url, req, res);
+      serveImage(req.url, req, res);
+
   }
 }
 
-function serveForm(req, res){
-  res.setHeader('Context-Type', 'text/html');
-  res.end(buildNewTeamPage());
-}
-
-function buildNewTeamPage(req, res){
-  return template.render('add-new-form.html', {
-    teamNames: imageTags,
-    imageTags: imageNamesToTags(imageTags).join('')
-  });
-}
 
 /** @function serveAllTeams
  * A function to serve a HTML page representing a
@@ -105,6 +97,37 @@ function serveAllTeams(req, res) {
   });
 }
 
+function serveForm(req, res){
+  res.setHeader('Context-Type', 'text/html');
+  res.end(buildNewTeamPage());
+}
+
+/** @function serveImage
+ * A function to serve an image file.
+ * @param {string} filename - the filename of the image
+ * to serve.
+ * @param {http.incomingRequest} - the request object
+ * @param {http.serverResponse} - the response object
+ */
+function serveImage(fileName, req, res) {
+  fs.readFile('images/' + decodeURIComponent(fileName), function(err, data){
+    if(err) {
+      console.error(err);
+      res.statusCode = 404;
+      res.statusMessage = "Resource not found";
+      res.end();
+      return;
+    }
+    res.setHeader('Content-Type', 'image/*');
+    res.end(data);
+  });
+}
+
+
+
+function buildNewTeamPage(req, res){
+  return template.render('add-new-form.html','');
+}
 
 /** @function getTeamNames
  * Retrieves the filenames for all images in the
@@ -114,12 +137,10 @@ function serveAllTeams(req, res) {
  */
 function getTeamNames(callback) {
   fs.readdir('public/images/', function(err, fileNames){
-    if(err)
-    {
+    if(err){
       callback(err, undefined);
     } 
     else{
-      console.log(fileNames);
       callback(false, fileNames);
     }
   });
@@ -134,8 +155,7 @@ function getTeamNames(callback) {
  */
 function buildIndexPage(imageTags) {
   return template.render('index.html', {
-    teamNames: imageTags,
-    imageTags: imageNamesToTags(imageTags).join('')
+    imageTags: teamNamesToHTMLTags(imageTags).join('')
   });
 }
 
@@ -147,34 +167,45 @@ function buildIndexPage(imageTags) {
  * @param {string[]} filenames - the image filenames
  * @return {string[]} an array of HTML img tags
  */
-function imageNamesToTags(fileNames) {
+function teamNamesToHTMLTags(fileNames) {
   return fileNames.map(function(fileName) {
-    return `<a href="${fileName}"><img src="${fileName}" alt="${fileName}"></a>`;
+    return `<a href="${fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
 
 
 
-/** @function serveImage
- * A function to serve an image file.
- * @param {string} filename - the filename of the image
- * to serve.
- * @param {http.incomingRequest} - the request object
- * @param {http.serverResponse} - the response object
- */
-function serveTeam(fileName, req, res) {
-  fs.readFile('public/images/' + decodeURIComponent(fileName), function(err, data){
-    if(err) {
-      console.error(err);
-      res.statusCode = 404;
-      res.statusMessage = "Resource not found";
-      res.end();
-      return;
-    }
-    res.setHeader('Content-Type', 'image/*');
-    res.end(data);
-  });
-}
+// // ************************************is this function being built correctly?
+// /** @function serveImage
+//  * A function to serve an image file.
+//  * @param {string} filename - the filename of the image
+//  * to serve.
+//  * @param {http.incomingRequest} - the request object
+//  * @param {http.serverResponse} - the response object
+//  */
+// function serveTeam(fileName, req, res) {
+//   console.log('In ServeTeam: FileName = ' + fileName);
+//   res.setHeader('Content-Type', 'text/html');
+//   res.end(buildTeamPage('images/'+ fileName));
+// }
+
+// function buildTeamPage(fileName){
+//     // get the data from json object based on filename.*********
+//     return template.render('team-data.html', {
+//     imageTag: teamNameToHTMLTag(fileName),
+//     name: '',
+//     description: '',
+//     coach:'',
+//     record:'',
+//     location:''
+//   });
+
+// }
+
+// function teamNameToHTMLTag(fileName){
+//   return `<img src="${fileName}" alt="${fileName}">`;
+// }
+
 
 /** @function uploadImage
  * A function to process an http POST request
