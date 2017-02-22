@@ -17,6 +17,9 @@ var port = 9596;
 //var config = JSON.parse(fs.readFileSync('config.json'));
 //var stylesheet = fs.readFileSync('gallery.css');
 
+var stylesheet = fs.readFileSync('public/styles/shared.css');
+
+
 // load templates
 template.loadDir('views');
 
@@ -50,16 +53,36 @@ function handleRequest(req, res) {
     case '/':
     case '/views':
     case 'index':
+    case '/index':
     case 'index.html':
+    case '/index.html':
         serveAllTeams(req, res);
       break;
-    case 'public/styles/shared.css':
+    case 'add-new-form.html':
+    case '/add-new-form.html':
+    case 'add-new-form':
+    case '/add-new-form':
+      serveForm(req, res);
+      break;
+    case 'public/styles/shared.css': // **********why does this exist
       res.setHeader('Content-Type', 'text/css');
       res.end(stylesheet);
       break;
     default:
       serveTeam(req.url, req, res);
   }
+}
+
+function serveForm(req, res){
+  res.setHeader('Context-Type', 'text/html');
+  res.end(buildNewTeamPage());
+}
+
+function buildNewTeamPage(req, res){
+  return template.render('add-new-form.html', {
+    teamNames: imageTags,
+    imageTags: imageNamesToTags(imageTags).join('')
+  });
 }
 
 /** @function serveAllTeams
@@ -90,15 +113,12 @@ function serveAllTeams(req, res) {
  * error and array of filenames as parameters
  */
 function getTeamNames(callback) {
-  fs.readdir('public/images/', function(err, items){
+  fs.readdir('public/images/', function(err, fileNames){
     if(err)
     {
       callback(err, undefined);
     } 
     else{
-      var fileNames = items.filter(function(item){
-        return item.statSync('public/images/' + item).isFile();
-      });
       console.log(fileNames);
       callback(false, fileNames);
     }
@@ -113,7 +133,7 @@ function getTeamNames(callback) {
  * gallery images.
  */
 function buildIndexPage(imageTags) {
-  return template.render('views/index.html', {
+  return template.render('index.html', {
     teamNames: imageTags,
     imageTags: imageNamesToTags(imageTags).join('')
   });
