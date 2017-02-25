@@ -189,7 +189,7 @@ function buildIndexPage(imageTags) {
  */
 function teamNamesToHTMLTags(fileNames) {
   return fileNames.map(function(fileName) {
-    return `<a href="${'team/' + fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
+    return `<a href="${'team/' + fileName.split('.')[0]}"><img class="clipboard-image" src="${fileName}" alt="${fileName}"></a>`;
   });
 }
 
@@ -223,7 +223,7 @@ function buildTeamPage(fileName){
 }
 
 function teamNameToHTMLTag(teamLogo){
-  return `<img src="${teamLogo}" alt="NFL Team Logo">`;
+  return `<img class="logo-large" src="${teamLogo}" alt="NFL Team Logo">`;
 }
 
 
