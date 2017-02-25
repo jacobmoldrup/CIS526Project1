@@ -190,8 +190,6 @@ function buildIndexPage(imageTags) {
  */
 function teamNamesToHTMLTags(fileNames) {
   return fileNames.map(function(fileName) {
-      console.log(fileName);
-
     return `<a href="${'team/' + fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
@@ -213,7 +211,9 @@ function serveTeam(fileName, req, res) {
 function buildTeamPage(fileName){
     // get the data from json object based on filename.
     // make reading of file asyncronous.
+    console.log("Getting it buildTeamPage*****:" + fileName);
     var data = jsonFiles[fileName];
+    console.log(data);
     return template.render('team-data.html', {
       imageTag: teamNameToHTMLTag(data.imagePath),
       name: data.name,
@@ -226,7 +226,6 @@ function buildTeamPage(fileName){
 }
 
 function teamNameToHTMLTag(teamLogo){
-  console.log(teamLogo);
   return `<img src="${teamLogo}" alt="NFL Team Logo">`;
 }
 
@@ -239,21 +238,22 @@ function uploadData(req, res){
       description:req.body.description,
       location:req.body.location,
       record:req.body.record,
-      imagePath: req.body.image.filename
+      imagePath: "/" + req.body.image.filename
     }
-    console.log(jsonData.name);
-    console.log(jsonData.coach);
-    console.log(jsonData.description );
-    console.log(jsonData.location);
-    console.log(jsonData.record);
-    console.log(jsonData.imagePath);
-
     var jsonFileName = req.body.image.filename.split('.')[0];
     var jsonExtension = '.json';
-    fs.writeFile(jsonFileName + jsonExtension, jsonData,function(err){
+    console.log("Json data stored at:"+ jsonFileName+ jsonExtension );
+
+    fs.writeFile("public/Data/" + jsonFileName + jsonExtension, JSON.stringify(jsonData),function(err){
       if(err)console.log(err);
     });
-    jsonData[jsonFileName] = jsonData;
+    console.log("just before we are storeing it:***" + jsonFileName)
+        console.log(jsonFiles);
+
+    jsonFiles[jsonFileName] = jsonData;
+        console.log("/n/n/n/n/n/n json fiels after storing new");
+    console.log(jsonFiles);
+
     console.log(jsonFileName+jsonExtension);
     uploadImage(req, res);
 
