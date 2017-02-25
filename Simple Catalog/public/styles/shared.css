@@ -1,3 +1,20 @@
-img {
-  width: 250px;
+.header{
+  width: 100%;
+  height: 80px;
 }
+
+
+.header-home-title h1{
+    width: 146px;
+}
+
+.header-navbar-selectable{
+    width: 110px;
+    display: float;
+}
+
+/*.clipboard-image img {
+
+}*/
+
+
