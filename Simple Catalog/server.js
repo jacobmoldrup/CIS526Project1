@@ -57,6 +57,7 @@ function handleRequest(req, res) {
     if(req.method == 'GET') {
         serveForm(req, res);
       } else if(req.method == 'POST') {
+        console.log('in POST case: ');
         uploadData(req, res);
       }
       break;
@@ -112,7 +113,7 @@ function serveForm(req, res){
  * @param {http.serverResponse} - the response object
  */
 function serveImage(fileName, req, res) {
-  fs.readFile('images/' + decodeURIComponent(fileName), function(err, data){
+  fs.readFile('public/images' + decodeURIComponent(fileName), function(err, data){
     if(err) {
       console.error(err);
       res.statusCode = 404;
@@ -189,6 +190,8 @@ function buildIndexPage(imageTags) {
  */
 function teamNamesToHTMLTags(fileNames) {
   return fileNames.map(function(fileName) {
+      console.log(fileName);
+
     return `<a href="${'team/' + fileName.split('.')[0]}"><img src="${fileName}" alt="${fileName}"></a>`;
   });
 }
@@ -223,6 +226,7 @@ function buildTeamPage(fileName){
 }
 
 function teamNameToHTMLTag(teamLogo){
+  console.log(teamLogo);
   return `<img src="${teamLogo}" alt="NFL Team Logo">`;
 }
 
@@ -237,11 +241,21 @@ function uploadData(req, res){
       record:req.body.record,
       imagePath: req.body.image.filename
     }
-    uploadImage(req, res);
+    console.log(jsonData.name);
+    console.log(jsonData.coach);
+    console.log(jsonData.description );
+    console.log(jsonData.location);
+    console.log(jsonData.record);
+    console.log(jsonData.imagePath);
+
     var jsonFileName = req.body.image.filename.split('.')[0];
     var jsonExtension = '.json';
-    fs.writeFile(jsonFileName + jsonExtension, jsonData);
+    fs.writeFile(jsonFileName + jsonExtension, jsonData,function(err){
+      if(err)console.log(err);
+    });
     jsonData[jsonFileName] = jsonData;
+    console.log(jsonFileName+jsonExtension);
+    uploadImage(req, res);
 
   });
 }
@@ -253,7 +267,7 @@ function uploadData(req, res){
  * @param {http.serverResponse} res - the response object
  */
 function uploadImage(req, res) { 
-  fs.writeFile('images/' + req.body.image.filename, req.body.image.data, function(err){
+  fs.writeFile('public/images/' + req.body.image.filename, req.body.image.data, function(err){
     if(err) {
       console.error(err);
       res.statusCode = 500;
@@ -261,7 +275,7 @@ function uploadImage(req, res) {
       res.end("Server Error");
       return;
     }
-    serveGallery(req, res);
+    serveAllTeams(req, res);
   });
 }
 
