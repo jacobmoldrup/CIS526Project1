@@ -57,7 +57,6 @@ function handleRequest(req, res) {
     if(req.method == 'GET') {
         serveForm(req, res);
       } else if(req.method == 'POST') {
-        console.log('in POST case: ');
         uploadData(req, res);
       }
       break;
@@ -211,9 +210,7 @@ function serveTeam(fileName, req, res) {
 function buildTeamPage(fileName){
     // get the data from json object based on filename.
     // make reading of file asyncronous.
-    console.log("Getting it buildTeamPage*****:" + fileName);
     var data = jsonFiles[fileName];
-    console.log(data);
     return template.render('team-data.html', {
       imageTag: teamNameToHTMLTag(data.imagePath),
       name: data.name,
@@ -242,19 +239,10 @@ function uploadData(req, res){
     }
     var jsonFileName = req.body.image.filename.split('.')[0];
     var jsonExtension = '.json';
-    console.log("Json data stored at:"+ jsonFileName+ jsonExtension );
-
     fs.writeFile("public/Data/" + jsonFileName + jsonExtension, JSON.stringify(jsonData),function(err){
       if(err)console.log(err);
     });
-    console.log("just before we are storeing it:***" + jsonFileName)
-        console.log(jsonFiles);
-
     jsonFiles[jsonFileName] = jsonData;
-        console.log("/n/n/n/n/n/n json fiels after storing new");
-    console.log(jsonFiles);
-
-    console.log(jsonFileName+jsonExtension);
     uploadImage(req, res);
 
   });
