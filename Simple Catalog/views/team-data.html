@@ -2,6 +2,8 @@
 <head>
     <title>NFL Data</title>
     <link href="/public/styles/shared.css" rel="stylesheet" type="text/css">
+    <link href="/public/styles/team-data.css" rel="stylesheet" type="text/css">
+
 </head>
 <body>
      <div class="header">
@@ -10,12 +12,28 @@
             <a class="header-form-link" href="add-new-form.html">Add New Team</a>
          </div>
     </div>
-
-        {{context.imageTag}}
-        {{context.name}}
-        {{context.location}}
-        {{context.record}}
-        {{context.description}}
-        {{context.coach}}
-
+    <div>
+        <div class="team-logo">
+            {{context.imageTag}}
+        </div>
+        <div class="team-data">
+            <ul>
+                <li>
+                    {{context.name}}
+                </li>
+                <li>
+                    {{context.location}}
+                </li>
+                <li>
+                    {{context.record}}
+                </li>
+                <li>
+                    {{context.coach}}
+                </li>
+                <li>
+                    {{context.description}}
+                </li>
+            </ul>                        
+        </div>
+    </div>
 </body>

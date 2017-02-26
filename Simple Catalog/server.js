@@ -19,7 +19,8 @@ var port = 9596;
 
 var sharedStylesheet = fs.readFileSync('public/styles/shared.css');
 var indexStylesheet = fs.readFileSync('public/styles/index.css');
-
+var teamDataStylesheet = fs.readFileSync('public/styles/team-data.css');
+var formStylesheet = fs.readFileSync('public/styles/add-new-form.css');
 
 // load templates
 template.loadDir('views');
@@ -63,6 +64,14 @@ function handleRequest(req, res) {
     case '/public/styles/index.css': 
       res.setHeader('Content-Type', 'text/css');
       res.end(indexStylesheet);
+      break;
+    case '/public/styles/team-data.css': 
+      res.setHeader('Content-Type', 'text/css');
+      res.end(teamDataStylesheet);
+      break;
+    case '/public/styles/add-new-form.css': 
+      res.setHeader('Content-Type', 'text/css');
+      res.end(formStylesheet);
       break;
     case '/public/styles/shared.css':
       res.setHeader('Content-Type', 'text/css');

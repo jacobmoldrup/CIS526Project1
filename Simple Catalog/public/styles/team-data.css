@@ -1,3 +1,14 @@
 .logo-large{
-  width: 80%;
+    width: 75%;
+    align-content: center;
+    align-self: center;
+    position: relative;
+
+}
+
+.team-logo{
+  align-content: center;
+  align-self: center;
+  position: relative;
+  width: 75%;
 }
