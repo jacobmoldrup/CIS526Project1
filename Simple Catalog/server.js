@@ -238,8 +238,7 @@ function uploadData(req, res){
       imagePath: "/" + req.body.image.filename
     }
     var jsonFileName = req.body.image.filename.split('.')[0];
-    var jsonExtension = '.json';
-    fs.writeFile("public/Data/" + jsonFileName + jsonExtension, JSON.stringify(jsonData),function(err){
+    fs.writeFile("public/Data/" + jsonFileName + ".json", JSON.stringify(jsonData),function(err){
       if(err)console.log(err);
     });
     jsonFiles[jsonFileName] = jsonData;

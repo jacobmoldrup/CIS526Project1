@@ -4,26 +4,45 @@
     <link href="public/styles/shared.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-    <div class="header">
-        <h1>NFL Data</h1>
-        <div><a href="add-new-form.html" class="navbar-selectable">Add New Team</a></div>
+     <div class="header">
+         <div class="header-elements">
+            <a href="index.html"><h1 class="header-home-title">NFL Data</h1></a>
+            <a class="header-form-link" href="add-new-form.html">Add New Team</a>
+         </div>
     </div>
     <div class="form-content">
-    <form action="" method="POST" enctype="multipart/form-data">
-        <fieldset>
-            <label for="name"> Name: </label>
-            <input type="text" name="team" id="name">
-            <label for="coach"> Coach: </label>
-            <input type="text" name="coach" id="coach">
-            <label for="description"> Description: </label>
-            <input type="text" name="description" id="description">
-            <label for="location"> Location: </label>
-            <input type="text" name="location" id="location">
-            <label for="record"> Record: </label>
-            <input type="text" name="record" id="record">
-            <input type="file" name="image">
-        </fieldset>
-        <input type="submit" value="Upload">
-    </form>      
+        <form action="" method="POST" enctype="multipart/form-data">
+            <fieldset>
+                <ul>
+                    <li>
+                        <label for="name"> Name: </label>
+                        <input type="text" name="team" id="name">
+                    </li>
+                    <li>
+                        <label for="coach"> Coach: </label>
+                        <input type="text" name="coach" id="coach">
+                    </li>
+                    <li>
+                        <label for="location"> Location: </label>
+                        <input type="text" name="location" id="location">
+                    </li>
+                    <li>
+                        <label for="record"> Record: </label>
+                        <input type="text" name="record" id="record">
+                    </li>
+                    <li>
+                        <label for="description"> Description: </label>
+                        <input type="text" name="description" id="description">
+                    </li>
+                    <li>
+                        <label for="image"> Team Logo: </label>
+                        <input type="file" name="image">
+                    </li>
+                    <li>
+                        <input type="submit" value="Submit">
+                    </li>
+                </ul>
+            </fieldset>
+        </form>      
     </div>
 </body>
